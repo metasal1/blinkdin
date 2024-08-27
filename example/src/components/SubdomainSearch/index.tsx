@@ -76,7 +76,7 @@ export const SubdomainSearch = () => {
       <>
         <div className="flex w-full">
           <input
-            className="w-full text-ellipsis border-b-2 bg-transparent p-1 text-lg focus-within:outline-none"
+            className="w-screen text-ellipsis border-b-2 bg-transparent p-1 text-lg focus-within:outline-none"
             value={subdomain}
             placeholder={`Search for your .${process.env.NEXT_PUBLIC_DOMAIN_NAME} subdomain...`}
             onChange={onSearchChange}
