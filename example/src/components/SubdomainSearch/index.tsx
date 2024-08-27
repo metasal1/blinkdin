@@ -117,7 +117,7 @@ export const SubdomainSearch = () => {
           target="_blank"
           className="mb-8 text-3xl font-semibold text-white"
         >
-          {`${subdomain}.${process.env.NEXT_PUBLIC_DOMAIN_NAME}.sol`}
+          {`${subdomain}.${process.env.NEXT_PUBLIC_DOMAIN_NAME}`}
           <ExternalLink className="ml-1 inline-block size-6" />
         </Link>
         <button className="animate-pulse text-xl text-white/75" onClick={reset}>

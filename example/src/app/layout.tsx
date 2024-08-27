@@ -3,8 +3,8 @@ import AppWalletProvider from "@/components/providers/AppWalletProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SNS Subregistrar Demo",
-  description: "SNS Subregistrar Demo",
+  title: "MyBlink Domain",
+  description: "Get yourself a domain on the Solana blockchain",
 };
 
 export default function RootLayout({

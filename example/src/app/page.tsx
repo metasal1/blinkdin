@@ -18,13 +18,13 @@ export default function Home() {
         <Image
           className="relative mb-6 size-20"
           src="/images/sns.svg"
-          alt="SNS Logo"
+          alt="MyBlink Logo"
           width={33}
           height={38}
           priority
         />
         <h1 className="mb-4 text-center text-2xl">
-          SNS Subdomain Registrar Demo
+          MyBlink.sol
         </h1>
         {connected ? <SubdomainSearch /> : <StartButton />}
       </div>
