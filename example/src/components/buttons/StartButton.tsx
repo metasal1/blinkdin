@@ -11,7 +11,7 @@ export const StartButton = () => {
       disabled={connecting}
       onClick={() => setVisible(true)}
     >
-      {connecting ? "Connecting..." : "Start 🡒"}
+      {connecting ? "Connecting..." : "Start Now"}
     </button>
   );
 };

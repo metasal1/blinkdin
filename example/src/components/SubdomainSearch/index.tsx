@@ -4,9 +4,11 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { getDomainKeySync, NAME_PROGRAM_ID } from "@bonfida/spl-name-service";
 import { ExternalLink } from "@/components/icons/ExternalLink";
 import { isValidSubdomain } from "@/utils/string";
+import { LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 
 enum Step {
   Searching,
+  Transfer,
   Processing,
   Success,
   Error,
@@ -14,7 +16,7 @@ enum Step {
 
 export const SubdomainSearch = () => {
   const { connection } = useConnection();
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
 
   const [step, setStep] = useState(Step.Searching);
   const [subdomain, setSubdomain] = useState("");
@@ -38,31 +40,63 @@ export const SubdomainSearch = () => {
     if (info?.owner?.equals(NAME_PROGRAM_ID)) {
       setErrorText("Subdomain Unavailable");
     } else {
-      setStep(Step.Processing);
-      await fetch(`/api/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          publicKey,
-          subdomain,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            setStep(Step.Success);
-          } else {
-            setErrorText(`Error: ${data.error}`);
-            setStep(Step.Error);
-          }
-        })
-        .catch(() => {
-          setErrorText("Error: Request failure");
-          setStep(Step.Error);
-        });
+      setStep(Step.Transfer);
     }
+  };
+
+  const onTransfer = async () => {
+    if (!publicKey) {
+      setErrorText("Wallet not connected");
+      setStep(Step.Error);
+      return;
+    }
+
+    try {
+      const transferAmount = 0.01 * LAMPORTS_PER_SOL;
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(process.env.NEXT_PUBLIC_RECEIVER_ADDRESS || ""),
+          lamports: transferAmount,
+        })
+      );
+
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "confirmed");
+
+      setStep(Step.Processing);
+      await registerSubdomain();
+    } catch (error) {
+      console.error("Transfer error:", error);
+      setErrorText(`Error: ${error instanceof Error ? error.message : "Unknown error during transfer"}`);
+      setStep(Step.Error);
+    }
+  };
+
+  const registerSubdomain = async () => {
+    await fetch(`/api/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        publicKey,
+        subdomain,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          setStep(Step.Success);
+        } else {
+          setErrorText(`Error: ${data.error}`);
+          setStep(Step.Error);
+        }
+      })
+      .catch(() => {
+        setErrorText("Error: Request failure");
+        setStep(Step.Error);
+      });
   };
 
   const reset = () => {
@@ -92,12 +126,31 @@ export const SubdomainSearch = () => {
             disabled={!!errorText}
             onClick={onSearch}
           >
-            🡒
+            GO!
           </button>
         </div>
         {errorText && (
           <span className="w-full p-1 text-sm text-red-400">{errorText}</span>
         )}
+      </>
+    );
+  }
+
+  if (step === Step.Transfer) {
+    return (
+      <>
+        <span className="mb-4 text-xl">
+          To register {subdomain}.{process.env.NEXT_PUBLIC_DOMAIN_NAME}, you need to pay 0.01 SOL.
+        </span>
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={onTransfer}
+        >
+          Pay and Register
+        </button>
+        <button className="animate-pulse text-xl text-white/75" onClick={reset}>
+          Cancel
+        </button>
       </>
     );
   }
@@ -121,7 +174,7 @@ export const SubdomainSearch = () => {
           <ExternalLink className="ml-1 inline-block size-6" />
         </Link>
         <button className="animate-pulse text-xl text-white/75" onClick={reset}>
-          Try again 🡒
+          Buy another
         </button>
       </>
     );
@@ -132,7 +185,7 @@ export const SubdomainSearch = () => {
       <>
         <span className="mb-8 text-xl text-red-400">{errorText}</span>
         <button className="animate-pulse text-xl text-white/75" onClick={reset}>
-          Try again 🡒
+          Try again
         </button>
       </>
     );
