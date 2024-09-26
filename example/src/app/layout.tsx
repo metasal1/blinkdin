@@ -3,7 +3,7 @@ import AppWalletProvider from "@/components/providers/AppWalletProvider";
 import "./globals.css";
 import Link from "next/link";
 export const metadata: Metadata = {
-  title: "Blinkd.sol Domain",
+  title: "Blinkd.in Domain",
   description: "Get yourself a domain on the Solana blockchain",
 };
 
